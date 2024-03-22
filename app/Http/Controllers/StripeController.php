@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Stripe\Stripe;
 
 class StripeController extends Controller
 {
@@ -15,14 +16,14 @@ class StripeController extends Controller
 
     public function session(Request $request)
     {
-        \Stripe\Stripe::setApiKey(config('stripe.sk'));
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
 
         $productname = $request->get('productname');
         $totalprice = $request->get('total');
-        $two0 = "00";
-        $total = "$totalprice$two0";
+        $total = number_format($totalprice, 2, '', '');
 
         $session = \Stripe\Checkout\Session::create([
+            'payment_method_types' => ['card'],
             'line_items'  => [
                 [
                     'price_data' => [
@@ -34,7 +35,6 @@ class StripeController extends Controller
                     ],
                     'quantity'   => 1,
                 ],
-
             ],
             'mode'        => 'payment',
             'success_url' => route('success'),
